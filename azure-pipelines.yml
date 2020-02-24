@@ -17,9 +17,16 @@ steps:
   inputs:
     version: '$(dotnetSdkVersion)'
 
+<<<<<<< HEAD
 - task: NuGetToolInstaller@0
   inputs:
     versionSpec: '5.4.0' 
+=======
+- task: UseDotNet@2
+  displayName: 'Use .NET Core SDK 2.1.505 for SonarCloud'
+  inputs:
+    version: '2.1.505'
+>>>>>>> 5c43c75aecf9fe37a242d1ccbe8ee2d77a4cc6de
 
 - task: Npm@1
   displayName: 'Run npm install'
@@ -36,6 +43,7 @@ steps:
   displayName: 'Write build info'
   workingDirectory: $(wwwrootDir)
 
+<<<<<<< HEAD
 - task: NuGetCommand@2
   displayName: 'Restore project dependencies'
   inputs:
@@ -43,6 +51,32 @@ steps:
     restoreSolution: '**/*.sln'
     feedsToUse: 'select'
     vstsFeed: 'Space Game - web - Dependencies/Tailspin.SpaceGame.Web.Models'
+=======
+- task: DotNetCoreCLI@2
+  displayName: 'Restore project dependencies'
+  inputs:
+    command: 'restore'
+    projects: '**/*.csproj'
+
+- task: SonarCloudPrepare@1
+  displayName: 'Prepare SonarCloud analysis'
+  inputs:
+    SonarCloud: 'SonarCloud connection 1'
+    organization: '$(SonarOrganization)'
+    projectKey: '$(SonarProjectKey)'
+    projectName: '$(SonarProjectName)'
+    projectVersion: '$(Build.BuildNumber)'
+    extraProperties: |
+     sonar.cs.opencover.reportsPaths=$(Build.SourcesDirectory)/TestResults/Coverage/coverage.opencover.xml
+     sonar.exclusions=**/wwwroot/lib/**/*
+  condition: |
+    and
+    (
+      succeeded(),
+      eq(variables['Build.Reason'], 'PullRequest'),
+      eq(variables['System.PullRequest.TargetBranch'], 'master')
+    )
+>>>>>>> 5c43c75aecf9fe37a242d1ccbe8ee2d77a4cc6de
 
 - task: DotNetCoreCLI@2
   displayName: 'Build the project - $(buildConfiguration)'
@@ -52,6 +86,54 @@ steps:
     projects: '**/*.csproj'
 
 - task: DotNetCoreCLI@2
+<<<<<<< HEAD
+=======
+  displayName: 'Install ReportGenerator'
+  inputs:
+    command: custom
+    custom: tool
+    arguments: 'install --global dotnet-reportgenerator-globaltool'
+
+- task: DotNetCoreCLI@2
+  displayName: 'Run unit tests - $(buildConfiguration)'
+  inputs:
+    command: 'test'
+    arguments: '--no-build --configuration $(buildConfiguration) /p:CollectCoverage=true /p:CoverletOutputFormat="cobertura%2copencover" /p:CoverletOutput=$(Build.SourcesDirectory)/TestResults/Coverage/'
+    publishTestResults: true
+    projects: '**/*.Tests.csproj'
+
+- script: |
+    reportgenerator -reports:$(Build.SourcesDirectory)/**/coverage.cobertura.xml -targetdir:$(Build.SourcesDirectory)/CodeCoverage -reporttypes:HtmlInline_AzurePipelines
+  displayName: 'Create code coverage report'
+
+- task: SonarCloudAnalyze@1
+  displayName: 'Run SonarCloud code analysis'
+  condition: |
+    and
+    (
+      succeeded(),
+      eq(variables['Build.Reason'], 'PullRequest'),
+      eq(variables['System.PullRequest.TargetBranch'], 'master')
+    )
+ 
+- task: SonarCloudPublish@1
+  displayName: 'Publish SonarCloud quality gate results'
+  condition: |
+    and
+    (
+      succeeded(),
+      eq(variables['Build.Reason'], 'PullRequest'),
+      eq(variables['System.PullRequest.TargetBranch'], 'master')
+    )
+
+- task: PublishCodeCoverageResults@1
+  displayName: 'Publish code coverage report'
+  inputs:
+    codeCoverageTool: 'cobertura'
+    summaryFileLocation: '$(Build.SourcesDirectory)/**/coverage.cobertura.xml'
+
+- task: DotNetCoreCLI@2
+>>>>>>> 5c43c75aecf9fe37a242d1ccbe8ee2d77a4cc6de
   displayName: 'Publish the project - $(buildConfiguration)'
   inputs:
     command: 'publish'
