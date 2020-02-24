@@ -1,0 +1,7 @@
+organization=space-game-web-080771
+projectKey=space-game-web-080771
+serverUrl=https://sonarcloud.io
+serverVersion=8.0.0.4619
+dashboardUrl=https://sonarcloud.io/dashboard?id=space-game-web-080771
+ceTaskId=AXA_qTrSVmWGloMp6Rt8
+ceTaskUrl=https://sonarcloud.io/api/ce/task?id=AXA_qTrSVmWGloMp6Rt8
